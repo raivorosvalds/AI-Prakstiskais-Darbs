@@ -1,17 +1,21 @@
-import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
 import java.util.ArrayList;
+import java.util.Random;
+import javax.swing.*;
 
 public class MainWindow extends JFrame {
-    private JTable table;
-    private JMenu turnMenu;
-    private JMenu algorithmMenu;
-    private JRadioButtonMenuItem player1;
-    private JRadioButtonMenuItem player2;
-    private JRadioButtonMenuItem minimax;
-    private JRadioButtonMenuItem alphabeta;
+    private final JMenu turnMenu;
+    private final JMenu algorithmMenu;
+    private final JRadioButtonMenuItem player1;
+    private final JRadioButtonMenuItem player2;
+    private final JRadioButtonMenuItem minimax;
+    private final JRadioButtonMenuItem alphabeta;
     private JSlider slider;
+    private JFrame resultFrame;
+    int player1Score;
+    int player2Score;
+    public boolean playerTurn;
+    public boolean Minimax;
 
     public MainWindow() {
         // Tiek definets JFrame nav vajadzibas izmantot mainigo kurs ir JFrame objekts, jo tiek extends JFrame
@@ -44,33 +48,101 @@ public class MainWindow extends JFrame {
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
         add(slider, BorderLayout.NORTH);
-        JButton startButton = new JButton("Start");
+        JButton startButton = new JButton("Start"); // Spēles sākšanas loģika
         startButton.addActionListener(e -> {
-            // Debug
-            System.out.println(getSelectedAlgorithm());
-            System.out.println(getSelectedPlayer());
-            System.out.println("Start button clicked!");
-            ArrayList<Integer> array = generateArray(slider.getValue());
+            if (resultFrame != null) {
+                resultFrame.dispose();
+            }
+            switch (getSelectedPlayer().getText()) {
+                case "Speletajs" ->  {
+                    playerTurn = true;
+                }
+                case "Dators" -> {
+                    playerTurn = false;
+                }
+                default -> throw new AssertionError();
+            }
+            switch (getSelectedAlgorithm().getText()) {
+                case "Minimax" -> {
+                    Minimax = true;
+                    player1Score = 0;
+                    player2Score = 0;
+                }
+                case "Alpha-Beta" -> {
+                    Minimax = false;
+                    player1Score = 0;
+                    player2Score = 0;
+                }
+                default -> throw new AssertionError();
+            }
+            JLabel label = new JLabel("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+            add(label);
+            ArrayList<Integer> gameArray = generateArray(slider.getValue());
             remove(slider);
             revalidate();
             repaint();
             startButton.setVisible(false);
-            GameButtons buttons = new GameButtons(array);
-            JButton continueButton = new JButton("Turpinat");
+            GameButtons buttons = new GameButtons(gameArray);
+            JButton continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
             continueButton.addActionListener(event -> {
                 if (!buttons.check()) {
                     JOptionPane.showMessageDialog(this, "Izvēlētie cipari nav blakus!!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                array.remove(0); // Placeholder
-                System.out.println(array); // Debug
-                buttons.updateButtons(array);
-                if (array.size() == 1) { // Placeholder
-                    remove(continueButton);
+                byte result = buttons.calculate(gameArray);
+                ArrayList<Integer> selectedIndices = buttons.getSelectedIndices();
+                switch (result) {
+                    case 2 -> {
+                        if (playerTurn) {
+                            player1Score = player1Score + 2;
+                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                        } else {
+                            player2Score = player2Score + 2;
+                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                        }
+                        gameArray.set(selectedIndices.get(0), 2);
+                        gameArray.remove((int)selectedIndices.get(1));
+                    }
+                    case -1 -> {
+                        if (playerTurn) {
+                            player1Score--;
+                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                        } else {
+                            player2Score--;
+                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                        }
+                        gameArray.set(selectedIndices.get(0), 3);
+                        gameArray.remove((int)selectedIndices.get(1));
+                    }
+                    case 1 -> {
+                        if (playerTurn) {
+                            player1Score++;
+                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                        } else {
+                            player2Score++;
+                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                        }
+                        gameArray.set(selectedIndices.get(0), 1);
+                        gameArray.remove((int)selectedIndices.get(1));
+                    }
+                    default -> throw new AssertionError();
+                }
+                playerTurn = !playerTurn; // Gājiena maiņa
+                buttons.updateButtons(gameArray);
+                if (gameArray.size() == 1) {
                     continueButton.setVisible(false);
                     buttons.dispose();
+                    // Rezultāts
+                    resultFrame = new JFrame("Spēles rezultāts");
+                    resultFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    resultFrame.setLayout(new FlowLayout());
+                    resultFrame.add(label);
+                    resultFrame.pack();
+                    resultFrame.setLocationRelativeTo(null);
+                    resultFrame.setVisible(true);
                     startButton.setVisible(true);
                     add(slider, BorderLayout.NORTH);
+                    remove(label);
                     revalidate();
                     repaint();
                 }
@@ -82,15 +154,7 @@ public class MainWindow extends JFrame {
         menuBar.add(turnMenu);
         menuBar.add(algorithmMenu);
         setJMenuBar(menuBar);
-        // Table kas paradis speles vesturi ieklauj Speletaja punktus ta briza virkni un Datora punktus
-        String[] columnNames = {"Speletajs", "Dators"};
-        Object[][] data = {};
-        table = new JTable(data, columnNames);
-        table.getTableHeader().setReorderingAllowed(false);
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-        panel.add(startButton, BorderLayout.SOUTH);
-        add(panel, BorderLayout.CENTER);
+        add(startButton, BorderLayout.SOUTH);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
