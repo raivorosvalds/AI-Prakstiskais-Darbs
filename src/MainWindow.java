@@ -83,6 +83,7 @@ public class MainWindow extends JFrame {
             revalidate();
             repaint();
             startButton.setVisible(false);
+            GameTree rootNode = new GameTree(player1Score, player2Score, gameArray);
             GameButtons buttons = new GameButtons(gameArray);
             JButton continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
             continueButton.addActionListener(event -> {
@@ -94,7 +95,7 @@ public class MainWindow extends JFrame {
                     return;
                 }
                 Integer[] chosen = new Integer[2];
-                byte result = buttons.calculate(gameArray);
+                byte result = buttons.calculateScore(gameArray);
                 ArrayList<Integer> selectedIndices = buttons.getSelectedIndices();
                 chosen[0] = gameArray.get(selectedIndices.get(0));
                 chosen[1] = gameArray.get(selectedIndices.get(1));
