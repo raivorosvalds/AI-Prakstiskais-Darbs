@@ -16,6 +16,7 @@ public class MainWindow extends JFrame {
     int player2Score;
     public boolean playerTurn;
     public boolean Minimax;
+    private JFrame computerTurn;
 
     public MainWindow() {
         // Tiek definets JFrame nav vajadzibas izmantot mainigo kurs ir JFrame objekts, jo tiek extends JFrame
@@ -85,12 +86,18 @@ public class MainWindow extends JFrame {
             GameButtons buttons = new GameButtons(gameArray);
             JButton continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
             continueButton.addActionListener(event -> {
+                if (computerTurn != null) {
+                    computerTurn.dispose();
+                }
                 if (!buttons.check()) {
                     JOptionPane.showMessageDialog(this, "Izvēlētie cipari nav blakus!!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                Integer[] chosen = new Integer[2];
                 byte result = buttons.calculate(gameArray);
                 ArrayList<Integer> selectedIndices = buttons.getSelectedIndices();
+                chosen[0] = gameArray.get(selectedIndices.get(0));
+                chosen[1] = gameArray.get(selectedIndices.get(1));
                 switch (result) {
                     case 2 -> {
                         if (playerTurn) {
@@ -126,6 +133,37 @@ public class MainWindow extends JFrame {
                         gameArray.remove((int)selectedIndices.get(1));
                     }
                     default -> throw new AssertionError();
+                }
+                // Debug kods priekš lai būtu redzams datora gājiens vēlāk pārvietot augstāk ar visu loģiku ko izpilda dators
+                if (!playerTurn) {
+                    computerTurn = new JFrame("Datora gājiens");
+                    computerTurn.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    computerTurn.setLayout(new FlowLayout());
+                    JLabel turn = new JLabel("Dators izvēlējās " + chosen[0] + " un " + chosen[1] + " ar atrašanos vietu " + (selectedIndices.get(0)+1) + " un " + (selectedIndices.get(1)+1));
+                    computerTurn.add(turn);
+                    computerTurn.pack();
+                    computerTurn.setVisible(true);
+                    playerTurn = !playerTurn;
+                    buttons.updateButtons(gameArray);
+                    if (gameArray.size() == 1) {
+                        continueButton.setVisible(false);
+                        buttons.dispose();
+                        // Rezultāts
+                        resultFrame = new JFrame("Spēles rezultāts");
+                        resultFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        resultFrame.setLayout(new FlowLayout());
+                        resultFrame.add(label);
+                        resultFrame.pack();
+                        resultFrame.setLocationRelativeTo(null);
+                        resultFrame.setVisible(true);
+                        startButton.setVisible(true);
+                        add(slider, BorderLayout.NORTH);
+                        remove(label);
+                        revalidate();
+                        repaint();
+                        return;
+                    }
+                    else return;
                 }
                 playerTurn = !playerTurn; // Gājiena maiņa
                 buttons.updateButtons(gameArray);
