@@ -14,7 +14,10 @@ public class GameButtons extends JFrame {
         selectedIndices = new ArrayList<>();
         createButtons(array);
         pack();
-        setLocationRelativeTo(null);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (screenSize.width - getWidth()) / 2;
+        int y = (screenSize.height - getHeight()) / 2 + 100;
+        setLocation(x, y);
         setVisible(true);
     }
 

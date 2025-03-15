@@ -17,6 +17,10 @@ public class MainWindow extends JFrame {
     public boolean playerTurn;
     public boolean Minimax;
     private JFrame computerTurn;
+    private JButton startButton;
+    private JLabel label;
+    private GameButtons buttons;
+    private JButton continueButton;
 
     public MainWindow() {
         // Tiek definets JFrame nav vajadzibas izmantot mainigo kurs ir JFrame objekts, jo tiek extends JFrame
@@ -49,7 +53,7 @@ public class MainWindow extends JFrame {
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
         add(slider, BorderLayout.NORTH);
-        JButton startButton = new JButton("Start"); // Spēles sākšanas loģika
+        startButton = new JButton("Start"); // Spēles sākšanas loģika
         startButton.addActionListener(e -> {
             if (resultFrame != null) {
                 resultFrame.dispose();
@@ -76,16 +80,15 @@ public class MainWindow extends JFrame {
                 }
                 default -> throw new AssertionError();
             }
-            JLabel label = new JLabel("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+            label = new JLabel("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
             add(label);
             ArrayList<Integer> gameArray = generateArray(slider.getValue());
             remove(slider);
-            revalidate();
-            repaint();
+            redraw();
             startButton.setVisible(false);
             GameTree rootNode = new GameTree(player1Score, player2Score, gameArray);
-            GameButtons buttons = new GameButtons(gameArray);
-            JButton continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
+            buttons = new GameButtons(gameArray);
+            continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
             continueButton.addActionListener(event -> {
                 if (computerTurn != null) {
                     computerTurn.dispose();
@@ -102,11 +105,9 @@ public class MainWindow extends JFrame {
                 switch (result) {
                     case 2 -> {
                         if (playerTurn) {
-                            player1Score = player1Score + 2;
-                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                            player1Score += 2;
                         } else {
-                            player2Score = player2Score + 2;
-                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+                            player2Score += 2;
                         }
                         gameArray.set(selectedIndices.get(0), 2);
                         gameArray.remove((int)selectedIndices.get(1));
@@ -114,10 +115,8 @@ public class MainWindow extends JFrame {
                     case -1 -> {
                         if (playerTurn) {
                             player1Score--;
-                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                         } else {
                             player2Score--;
-                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                         }
                         gameArray.set(selectedIndices.get(0), 3);
                         gameArray.remove((int)selectedIndices.get(1));
@@ -125,16 +124,15 @@ public class MainWindow extends JFrame {
                     case 1 -> {
                         if (playerTurn) {
                             player1Score++;
-                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                         } else {
                             player2Score++;
-                            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                         }
                         gameArray.set(selectedIndices.get(0), 1);
                         gameArray.remove((int)selectedIndices.get(1));
                     }
                     default -> throw new AssertionError();
                 }
+                label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                 // Debug kods priekš lai būtu redzams datora gājiens vēlāk pārvietot augstāk ar visu loģiku ko izpilda dators
                 if (!playerTurn) {
                     computerTurn = new JFrame("Datora gājiens");
@@ -143,25 +141,15 @@ public class MainWindow extends JFrame {
                     JLabel turn = new JLabel("Dators izvēlējās " + chosen[0] + " un " + chosen[1] + " ar atrašanos vietu " + (selectedIndices.get(0)+1) + " un " + (selectedIndices.get(1)+1));
                     computerTurn.add(turn);
                     computerTurn.pack();
+                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                    int x = (screenSize.width - computerTurn.getWidth()) / 2;
+                    int y = (screenSize.height - computerTurn.getHeight()) / 2 - 150;
+                    computerTurn.setLocation(x, y);
                     computerTurn.setVisible(true);
                     playerTurn = !playerTurn;
                     buttons.updateButtons(gameArray);
                     if (gameArray.size() == 1) {
-                        continueButton.setVisible(false);
-                        buttons.dispose();
-                        // Rezultāts
-                        resultFrame = new JFrame("Spēles rezultāts");
-                        resultFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                        resultFrame.setLayout(new FlowLayout());
-                        resultFrame.add(label);
-                        resultFrame.pack();
-                        resultFrame.setLocationRelativeTo(null);
-                        resultFrame.setVisible(true);
-                        startButton.setVisible(true);
-                        add(slider, BorderLayout.NORTH);
-                        remove(label);
-                        revalidate();
-                        repaint();
+                        endGame();
                         return;
                     }
                     else return;
@@ -169,26 +157,11 @@ public class MainWindow extends JFrame {
                 playerTurn = !playerTurn; // Gājiena maiņa
                 buttons.updateButtons(gameArray);
                 if (gameArray.size() == 1) {
-                    continueButton.setVisible(false);
-                    buttons.dispose();
-                    // Rezultāts
-                    resultFrame = new JFrame("Spēles rezultāts");
-                    resultFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    resultFrame.setLayout(new FlowLayout());
-                    resultFrame.add(label);
-                    resultFrame.pack();
-                    resultFrame.setLocationRelativeTo(null);
-                    resultFrame.setVisible(true);
-                    startButton.setVisible(true);
-                    add(slider, BorderLayout.NORTH);
-                    remove(label);
-                    revalidate();
-                    repaint();
+                    endGame();
                 }
             });
             add(continueButton, BorderLayout.SOUTH);
-            revalidate();
-            repaint();
+            redraw();
         });
         menuBar.add(turnMenu);
         menuBar.add(algorithmMenu);
@@ -222,5 +195,25 @@ public class MainWindow extends JFrame {
         }
         return array;
     }
-    
+    protected void endGame() {
+        continueButton.setVisible(false);
+        buttons.dispose();
+        // Rezultāts
+        resultFrame = new JFrame("Spēles rezultāts");
+        resultFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        resultFrame.setLayout(new FlowLayout());
+        resultFrame.add(label);
+        resultFrame.pack();
+        resultFrame.setLocationRelativeTo(null);
+        resultFrame.setVisible(true);
+        startButton.setVisible(true);
+        add(slider, BorderLayout.NORTH);
+        remove(label);
+        revalidate();
+        repaint();
+    }
+    protected void redraw() {
+        revalidate();
+        repaint();
+    }
 }
