@@ -29,13 +29,10 @@ public class GameButtons extends JFrame {
             if (selectedIndices.contains(index)) {
                 selectedIndices.remove((Integer) index);
                 button.setBackground(null);
-            } else {
-                if (selectedIndices.size() < 2) {
+            } else if (selectedIndices.size() < 2) {
                     selectedIndices.add(index);
                     button.setBackground(Color.GREEN);
                 }
-            }
-            System.out.println("Selected indices: " + selectedIndices);
             });
             buttons.add(button);
             add(button);

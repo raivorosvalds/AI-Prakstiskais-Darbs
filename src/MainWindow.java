@@ -17,11 +17,11 @@ public class MainWindow{
     int player2Score;
     public boolean playerTurn;
     public boolean Minimax;
-    private JFrame computerTurn;
     private JButton startButton;
     private JLabel label;
     private GameButtons buttons;
     private JButton continueButton;
+    private fakeButtons fakeButtons;
 
     public MainWindow() {
         frame = new JFrame();
@@ -100,18 +100,18 @@ public class MainWindow{
             buttons = new GameButtons(gameArray);
             continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
             continueButton.addActionListener(event -> {
-                if (computerTurn != null) {
-                    computerTurn.dispose();
+                if (fakeButtons != null) {
+                    fakeButtons.dispose();
                 }
                 if (!buttons.check()) {
                     JOptionPane.showMessageDialog(frame, "Izvēlētie cipari nav blakus!!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                Integer[] chosen = new Integer[2];
                 byte result = buttons.calculateScore(gameArray);
                 ArrayList<Integer> selectedIndices = buttons.getSelectedIndices();
-                chosen[0] = gameArray.get(selectedIndices.get(0));
-                chosen[1] = gameArray.get(selectedIndices.get(1));
+                if (!playerTurn) {
+                    fakeButtons = new fakeButtons(gameArray, selectedIndices);
+                }
                 switch (result) {
                     case 2 -> {
                         if (playerTurn) {
@@ -145,17 +145,7 @@ public class MainWindow{
                 label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                 // Debug kods priekš lai būtu redzams datora gājiens vēlāk pārvietot augstāk ar visu loģiku ko izpilda dators
                 if (!playerTurn) {
-                    computerTurn = new JFrame("Datora gājiens");
-                    computerTurn.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    computerTurn.setLayout(new FlowLayout());
-                    JLabel turn = new JLabel("Dators izvēlējās " + chosen[0] + " un " + chosen[1] + " ar atrašanos vietu " + (selectedIndices.get(0)+1) + " un " + (selectedIndices.get(1)+1));
-                    computerTurn.add(turn);
-                    computerTurn.pack();
-                    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-                    int x = (screenSize.width - computerTurn.getWidth()) / 2;
-                    int y = (screenSize.height - computerTurn.getHeight()) / 2 - 150;
-                    computerTurn.setLocation(x, y);
-                    computerTurn.setVisible(true);
+                    fakeButtons.setVisible(true);
                     playerTurn = !playerTurn;
                     buttons.updateButtons(gameArray);
                     if (gameArray.size() == 1) {
@@ -222,5 +212,29 @@ public class MainWindow{
         frame.remove(label);
         frame.revalidate();
         frame.repaint();
+    }
+    public class fakeButtons extends JFrame {
+        public fakeButtons(ArrayList<Integer> gameArray, ArrayList<Integer> selectedIndices) {
+            setTitle("Datora izvēle");
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLayout(new FlowLayout());
+            createFakeButtons(gameArray, selectedIndices);
+            pack();
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = (screenSize.width - getWidth()) / 2;
+            int y = (screenSize.height - getHeight()) / 2 - 150;
+            setLocation(x, y);
+        }
+        protected final void createFakeButtons(ArrayList<Integer> gameArray, ArrayList<Integer> selectedIndices) {
+            for (int i = 0; i < gameArray.size(); i++) {
+                int num = gameArray.get(i);
+                JButton button = new JButton(Integer.toString(num));
+                button.setEnabled(false);
+                if (i == selectedIndices.get(0) || i == selectedIndices.get(1)) {
+                    button.setBackground(Color.GREEN);
+                }
+                add(button);
+            }
+        }
     }
 }
