@@ -63,27 +63,69 @@ public class GameTree {
 //testesanai parada visus iespejamus stavoklus 1 un 2 limeni 
     public void printTree(int depth){
             String indent = " ".repeat(depth*2);
-            System.out.println(indent + "stavoklis: " + gameState + " |P1 " + player1Score + " |P2 " + player2Score);
+            int heuristicValue=heuristic();
+            int minimaxValue = minmax(this, 2, player1turn); 
+            System.out.println(indent + "stavoklis: " + gameState + " |P1 " + player1Score + " |P2 " + player2Score + " | Heurisrtic " + heuristicValue + "| MinMax " + minimaxValue);
             for(GameTree child : getChildren()){
                 child.printTree(depth +1);
             }
     }
-
-    //heiristiska?? idk neko vairak neizdomaju
+           
     public int heuristic(){
-        int count7 =0;
-        int over7 = 0;
-        int below7 = 0;
+        if(player1Score>player2Score) return 1;
+        if(player1Score<player2Score) return -1;
 
-        for(int i = 0; i<gameState.size()-1; i++){
-            int sum = gameState.get(i) + gameState.get(i +1);
-
-            if(sum==7)count7++;
-            else if(sum>7) over7++;
-            else below7++;
-        }
-
-        return 2*count7 + over7 - below7;//izsauksim lai apskatitos preferable gamestate???
+        return 0;
     }
 
+    public int minmax(GameTree node, int depth, boolean player1turn){
+        int eval, min, max;
+        if(depth == 0 || node.isTerminal() || node.getChildren().isEmpty()) return node.heuristic();
+
+        if(player1turn){
+            max = Integer.MIN_VALUE;
+            for(GameTree child : node.getChildren()){
+                eval = minmax(child, depth -1, false);
+                max= Math.max(max, eval);
+            }
+            return max;
+        }else{
+            min = Integer.MAX_VALUE;
+            for(GameTree child : node.getChildren()){
+                eval = minmax(child, depth-1, true);
+                min=Math.min(min, eval);
+            }
+            return min;
+        }
+    }
+
+    public GameTree bestMove(int depth){
+        if(this.getChildren().isEmpty() && !this.isTerminal()){
+            this.generateChildren(depth, 0);
+        }
+
+        GameTree bestChild = null;
+        int bestVal;
+
+        if(player1turn){
+            bestVal=Integer.MIN_VALUE;
+            for(GameTree child: getChildren()){
+                int value = minmax(child, depth-1, false);
+                if(value>bestVal){
+                    bestVal=value;
+                    bestChild=child;
+                }
+            }
+        }else{
+            bestVal=Integer.MAX_VALUE;
+            for(GameTree child: getChildren()){
+                int value = minmax(child, depth-1, true);
+                if(value>bestVal){
+                    bestVal=value;
+                    bestChild=child;
+                 }
+             }
+        }
+        return bestChild;
+    }
 }

@@ -95,7 +95,17 @@ public class MainWindow{
             System.out.println("Skaitlu rinda: " + gameArray);
             rootNode.generateChildren(2, 0);//max depth 2, jo ar lielaku parak bremze
             rootNode.printTree(0);
-
+            //tests kas izvelets ka best move
+            GameTree bestMove = rootNode.bestMove(2);
+            if (bestMove != null) {
+                System.out.println("Best Move:");
+                System.out.println("Game State: " + bestMove.gameState);
+                System.out.println("Player1 Score: " + bestMove.player1Score);
+                System.out.println("Player2 Score: " + bestMove.player2Score);
+                System.out.println("Heuristic: " + bestMove.heuristic());
+            } else {
+                System.out.println("No valid best move found.");
+            }
 
             buttons = new GameButtons(gameArray);
             continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
