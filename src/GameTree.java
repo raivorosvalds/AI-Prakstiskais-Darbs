@@ -27,16 +27,16 @@ public class GameTree {
 
             if(sum>7){
                 replacement = 1;
-                if(player1turn) newScore1+=1;
-                else newScore2+=1;
+                if(!player1turn) newScore2+=1;
+                else newScore1+=1;
             }else if(sum<7){
                 replacement = 3;
-                if(player1turn) newScore1-=1;
-                else newScore2-=1;
+                if(!player1turn) newScore2-=1;
+                else newScore1-=1;
             }else{
                 replacement=2;
-                if(player1turn) newScore1+=2;
-                else newScore2+=2;
+                if(!player1turn) newScore2+=2;
+                else newScore1+=2;
             }
 
             newGameState.set(i, replacement);
@@ -64,35 +64,33 @@ public class GameTree {
     public void printTree(int depth){
             String indent = " ".repeat(depth*2);
             int heuristicValue=heuristic();
-            int minimaxValue = minmax(this, 2, player1turn); 
+            int minimaxValue = minmax(this, 2, !player1turn); 
             System.out.println(indent + "stavoklis: " + gameState + " |P1 " + player1Score + " |P2 " + player2Score + " | Heurisrtic " + heuristicValue + "| MinMax " + minimaxValue);
             for(GameTree child : getChildren()){
                 child.printTree(depth +1);
             }
     }
-           
-    public int heuristic(){
-        if(player1Score>player2Score) return 1;
-        if(player1Score<player2Score) return -1;
 
-        return 0;
+    //man liekas nav tipiska funkcija jo nav -1 0 1, bet viņa vislabāk apraksta stāvokļus     
+    public int heuristic(){
+        return player2Score - player1Score;
     }
 
     public int minmax(GameTree node, int depth, boolean player1turn){
         int eval, min, max;
         if(depth == 0 || node.isTerminal() || node.getChildren().isEmpty()) return node.heuristic();
 
-        if(player1turn){
+        if(!player1turn){
             max = Integer.MIN_VALUE;
             for(GameTree child : node.getChildren()){
-                eval = minmax(child, depth -1, false);
+                eval = minmax(child, depth -1, true);
                 max= Math.max(max, eval);
             }
             return max;
         }else{
             min = Integer.MAX_VALUE;
             for(GameTree child : node.getChildren()){
-                eval = minmax(child, depth-1, true);
+                eval = minmax(child, depth-1, false);
                 min=Math.min(min, eval);
             }
             return min;
@@ -107,22 +105,30 @@ public class GameTree {
         GameTree bestChild = null;
         int bestVal;
 
-        if(player1turn){
+        if(!player1turn){
             bestVal=Integer.MIN_VALUE;
             for(GameTree child: getChildren()){
-                int value = minmax(child, depth-1, false);
-                if(value>bestVal){
+                int value = minmax(child, depth-1, true);
+                if(value>bestVal ){
                     bestVal=value;
                     bestChild=child;
+                //tests
+                    System.out.println("Child: " + child.gameState + 
+                       " | Minimax: " + value + 
+                       " | Heuristic: " + child.heuristic());    
                 }
             }
         }else{
             bestVal=Integer.MAX_VALUE;
             for(GameTree child: getChildren()){
-                int value = minmax(child, depth-1, true);
-                if(value>bestVal){
+                int value = minmax(child, depth-1, false);
+                if(value<bestVal ){
                     bestVal=value;
                     bestChild=child;
+                    //tests
+                    System.out.println("Child: " + child.gameState + 
+                       " | Minimax: " + value + 
+                       " | Heuristic: " + child.heuristic());    
                  }
              }
         }

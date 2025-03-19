@@ -89,13 +89,12 @@ public class MainWindow{
             frame.revalidate();
             frame.repaint();
             startButton.setVisible(false);
-            GameTree rootNode = new GameTree(player1Score, player2Score, gameArray, playerTurn);
 
-            //tests game tree
+//šo varēsim dzēst ārā, tas tikai testēšanai
+            GameTree rootNode = new GameTree(player1Score, player2Score, gameArray, !playerTurn);
             System.out.println("Skaitlu rinda: " + gameArray);
             rootNode.generateChildren(2, 0);//max depth 2, jo ar lielaku parak bremze
             rootNode.printTree(0);
-            //tests kas izvelets ka best move
             GameTree bestMove = rootNode.bestMove(2);
             if (bestMove != null) {
                 System.out.println("Best Move:");
@@ -107,21 +106,27 @@ public class MainWindow{
                 System.out.println("No valid best move found.");
             }
 
+
             buttons = new GameButtons(gameArray);
+
+            if(!playerTurn){
+                computerMove(gameArray);
+                playerTurn=true;
+            }
             continueButton = new JButton("Turpinat"); // Loģika kas tiek darbināta kad tiek nospiesta turpināt poga
             continueButton.addActionListener(event -> {
                 if (fakeButtons != null) {
                     fakeButtons.dispose();
                 }
-                if (!buttons.check()) {
+                if (playerTurn && !buttons.check()) {
                     JOptionPane.showMessageDialog(frame, "Izvēlētie cipari nav blakus!!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 byte result = buttons.calculateScore(gameArray);
                 ArrayList<Integer> selectedIndices = buttons.getSelectedIndices();
-                if (!playerTurn) {
-                    fakeButtons = new fakeButtons(gameArray, selectedIndices);
-                }
+                //if (!playerTurn) {
+                   // fakeButtons = new fakeButtons(gameArray, selectedIndices);
+               // }
                 switch (result) {
                     case 2 -> {
                         if (playerTurn) {
@@ -154,21 +159,30 @@ public class MainWindow{
                 }
                 label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
                 // Debug kods priekš lai būtu redzams datora gājiens vēlāk pārvietot augstāk ar visu loģiku ko izpilda dators
-                if (!playerTurn) {
-                    fakeButtons.setVisible(true);
-                    playerTurn = !playerTurn;
-                    buttons.updateButtons(gameArray);
-                    if (gameArray.size() == 1) {
+                
+                buttons.updateButtons(gameArray);
+                if (gameArray.size() == 1) {
                         endGame();
                         return;
                     }
-                    else return;
-                }
-                playerTurn = !playerTurn; // Gājiena maiņa
-                buttons.updateButtons(gameArray);
-                if (gameArray.size() == 1) {
-                    endGame();
-                }
+
+                playerTurn=false;
+                computerMove(gameArray);    
+                //if (!playerTurn) {
+                   // fakeButtons.setVisible(true);
+                   // playerTurn = !playerTurn;
+                   // buttons.updateButtons(gameArray);
+                    //if (gameArray.size() == 1) {
+                     //   endGame();
+                      //  return;
+                    //}
+                    //else return;
+               // }
+                playerTurn = true; // Gājiena maiņa
+               // buttons.updateButtons(gameArray);
+                //if (gameArray.size() == 1) {
+                    //endGame();
+               // }
             });
             frame.add(continueButton, BorderLayout.SOUTH);
             frame.revalidate();
@@ -251,5 +265,47 @@ public class MainWindow{
                 add(button);
             }
         }
+    }
+
+     private void computerMove(ArrayList<Integer> gameArray) {
+        ArrayList<Integer> oldGameArray = new ArrayList<>(gameArray);
+
+        GameTree tree = new GameTree(player1Score, player2Score, gameArray, false);
+        tree.generateChildren(2, 0);
+        GameTree bestMove = tree.bestMove(2);
+        if (bestMove != null) {
+            ArrayList<Integer> moveIndices = moveIndices(oldGameArray, bestMove.gameState);
+
+            fakeButtons = new fakeButtons(oldGameArray, moveIndices);
+            fakeButtons.setVisible(true);
+
+            gameArray.clear();
+            gameArray.addAll(bestMove.gameState);
+            player1Score = bestMove.player1Score;
+            player2Score = bestMove.player2Score;
+
+            label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
+            buttons.updateButtons(gameArray);
+        } else {
+            System.out.println("No valid move found for computer.");
+        }
+      
+        if (gameArray.size() == 1) {
+            endGame();
+        }
+    }
+
+       private ArrayList<Integer> moveIndices(ArrayList<Integer> oldList, ArrayList<Integer> newList) {
+        ArrayList<Integer> indices = new ArrayList<>();
+        int i = 0;
+        while (i < newList.size() && oldList.get(i).equals(newList.get(i))) {
+            i++;
+        }
+        if (i == newList.size()) {
+            i = newList.size() - 1;
+        }
+        indices.add(i);
+        indices.add(i + 1); 
+        return indices;
     }
 }
