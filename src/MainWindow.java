@@ -223,23 +223,24 @@ public class MainWindow{
     protected void endGame() {
     frame.remove(continueButton);
     buttons.dispose();
-    if (fakeButtons != null) { // Pārbaudām, vai datora logs eksistē
-        fakeButtons.dispose(); // Aizver datora gājiena logu
+    if (fakeButtons != null) {
+        fakeButtons.dispose();
     }
     resultFrame = new JFrame("Spēles rezultāts");
     resultFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     resultFrame.setLayout(new FlowLayout());
     resultFrame.add(label);
-    JButton restartButton = new JButton("Restartēt spēli");
-    restartButton.addActionListener(e -> {
-        resultFrame.dispose(); // Aizver rezultātu logu
-        frame.dispose(); // Aizver pašreizējo spēles logu
-        new MainWindow(); // Atver jaunu spēles logu
-    });
-    resultFrame.add(restartButton);
     resultFrame.pack();
-    resultFrame.setLocationRelativeTo(null);
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    int x = (screenSize.width - resultFrame.getWidth()) / 2;
+    int y = (screenSize.height - resultFrame.getHeight()) / 2 - 150;
+    resultFrame.setLocation(x, y);
     resultFrame.setVisible(true);
+    startButton.setVisible(true);
+    frame.add(slider, BorderLayout.NORTH);
+    frame.remove(label);
+    frame.revalidate();
+    frame.repaint();
 }
 
     public class fakeButtons extends JFrame {
