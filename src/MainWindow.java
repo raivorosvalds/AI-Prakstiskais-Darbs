@@ -273,7 +273,12 @@ public class MainWindow{
 
         GameTree tree = new GameTree(player1Score, player2Score, gameArray, false);
         tree.generateChildren(2, 0);
-        GameTree bestMove = tree.bestMove(2);
+        GameTree bestMove;
+        if (Minimax) {
+            bestMove = tree.bestMove(2); 
+        } else {
+            bestMove = tree.bestMoveAlphaBeta(2); 
+        }
         if (bestMove != null) {
             ArrayList<Integer> moveIndices = moveIndices(oldGameArray, bestMove.gameState);
 

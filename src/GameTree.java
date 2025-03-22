@@ -65,7 +65,13 @@ public class GameTree {
             String indent = " ".repeat(depth*2);
             int heuristicValue=heuristic();
             int minimaxValue = minmax(this, 2, !player1turn); 
-            System.out.println(indent + "stavoklis: " + gameState + " |P1 " + player1Score + " |P2 " + player2Score + " | Heurisrtic " + heuristicValue + "| MinMax " + minimaxValue);
+            int alphaBetaValue = alphaBeta(this, 2, Integer.MIN_VALUE, Integer.MAX_VALUE, !player1turn);
+            System.out.println(indent + "stavoklis: " + gameState + 
+                   " |P1 " + player1Score + 
+                   " |P2 " + player2Score + 
+                   " | Heuristic " + heuristicValue + 
+                   " | MinMax " + minimaxValue + 
+                   " | AlphaBeta " + alphaBetaValue);
             for(GameTree child : getChildren()){
                 child.printTree(depth +1);
             }
@@ -131,6 +137,66 @@ public class GameTree {
                        " | Heuristic: " + child.heuristic());    
                  }
              }
+        }
+        return bestChild;
+    }
+
+    public int alphaBeta(GameTree node, int depth, int alpha, int beta, boolean maximizingPlayer) {
+        if (depth == 0 || node.isTerminal() || node.getChildren().isEmpty()) {
+            return node.heuristic();
+        }
+    
+        if (maximizingPlayer) {
+            int maxEval = Integer.MIN_VALUE;
+            for (GameTree child : node.getChildren()) {
+                int eval = alphaBeta(child, depth - 1, alpha, beta, false);
+                maxEval = Math.max(maxEval, eval);
+                alpha = Math.max(alpha, eval);
+                if (beta <= alpha) {
+                    break; // Beta cut-off
+                }
+            }
+            return maxEval;
+        } else {
+            int minEval = Integer.MAX_VALUE;
+            for (GameTree child : node.getChildren()) {
+                int eval = alphaBeta(child, depth - 1, alpha, beta, true);
+                minEval = Math.min(minEval, eval);
+                beta = Math.min(beta, eval);
+                if (beta <= alpha) {
+                    break; // Alpha cut-off
+                }
+            }
+            return minEval;
+        }
+    }
+    
+    public GameTree bestMoveAlphaBeta(int depth) {
+        if (this.getChildren().isEmpty() && !this.isTerminal()) {
+            this.generateChildren(depth, 0);
+        }
+    
+        GameTree bestChild = null;
+        int bestVal;
+    
+        if (!player1turn) {
+            bestVal = Integer.MIN_VALUE;
+            for (GameTree child : getChildren()) {
+                int value = alphaBeta(child, depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+                if (value > bestVal) {
+                    bestVal = value;
+                    bestChild = child;
+                }
+            }
+        } else {
+            bestVal = Integer.MAX_VALUE;
+            for (GameTree child : getChildren()) {
+                int value = alphaBeta(child, depth - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+                if (value < bestVal) {
+                    bestVal = value;
+                    bestChild = child;
+                }
+            }
         }
         return bestChild;
     }
