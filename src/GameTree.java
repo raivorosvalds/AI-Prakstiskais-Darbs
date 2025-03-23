@@ -38,7 +38,7 @@ public class GameTree {
                 if(!player1turn) newScore2+=2;
                 else newScore1+=2;
             }
-
+           
             newGameState.set(i, replacement);
             newGameState.remove(i+1);
 

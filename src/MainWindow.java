@@ -251,7 +251,6 @@ public class MainWindow{
         ArrayList<Integer> oldGameArray = new ArrayList<>(gameArray);
 
         GameTree tree = new GameTree(player1Score, player2Score, gameArray, false);
-        tree.generateChildren(2, 0);
         GameTree bestMove;
         if (Minimax) {
             bestMove = tree.bestMove(2); 
@@ -281,16 +280,28 @@ public class MainWindow{
     }
 
        private ArrayList<Integer> moveIndices(ArrayList<Integer> oldList, ArrayList<Integer> newList) {
-        ArrayList<Integer> indices = new ArrayList<>();
-        int i = 0;
-        while (i < newList.size() && oldList.get(i).equals(newList.get(i))) {
-            i++;
+         for (int i = 0; i < oldList.size() - 1; i++) {
+            int a = oldList.get(i);
+            int b = oldList.get(i + 1);
+            int replacement;
+            int sum = a + b;
+            if (sum > 7) {
+                replacement = 1;
+            } else if (sum < 7) {
+                replacement = 3;
+            } else {
+                replacement = 2;
+            }
+            ArrayList<Integer> candidate = new ArrayList<>(oldList);
+            candidate.set(i, replacement);
+            candidate.remove(i + 1);
+            if (candidate.equals(newList)) {
+                ArrayList<Integer> indices = new ArrayList<>();
+                indices.add(i);
+                indices.add(i + 1);
+                return indices;
+            }
         }
-        if (i == newList.size()) {
-            i = newList.size() - 1;
-        }
-        indices.add(i);
-        indices.add(i + 1); 
-        return indices;
+        return new ArrayList<>(); // No valid move found
     }
 }
