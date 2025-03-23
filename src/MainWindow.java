@@ -25,11 +25,9 @@ public class MainWindow{
 
     public MainWindow() {
         frame = new JFrame();
-        // Tiek definets JFrame nav vajadzibas izmantot mainigo kurs ir JFrame objekts, jo tiek extends JFrame
         frame.setTitle("AI Spele");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
-        // Tiek definets Menu bar prieks algoritma un gajiena izveles, abos default izvele ir "Speletajs" un "Minimax"
         JMenuBar menuBar = new JMenuBar();
         turnMenu = new JMenu("Gajiens");
         algorithmMenu = new JMenu("Algoritms");
@@ -90,21 +88,21 @@ public class MainWindow{
             frame.repaint();
             startButton.setVisible(false);
 
-//šo varēsim dzēst ārā, tas tikai testēšanai
-            GameTree rootNode = new GameTree(player1Score, player2Score, gameArray, !playerTurn);
-            System.out.println("Skaitlu rinda: " + gameArray);
-            rootNode.generateChildren(2, 0);//max depth 2, jo ar lielaku parak bremze
-            rootNode.printTree(0);
-            GameTree bestMove = rootNode.bestMove(2);
-            if (bestMove != null) {
-                System.out.println("Best Move:");
-                System.out.println("Game State: " + bestMove.gameState);
-                System.out.println("Player1 Score: " + bestMove.player1Score);
-                System.out.println("Player2 Score: " + bestMove.player2Score);
-                System.out.println("Heuristic: " + bestMove.heuristic());
-            } else {
-                System.out.println("No valid best move found.");
-            }
+// //šo varēsim dzēst ārā, tas tikai testēšanai
+//             GameTree rootNode = new GameTree(player1Score, player2Score, gameArray, !playerTurn);
+//             System.out.println("Skaitlu rinda: " + gameArray);
+//             rootNode.generateChildren(2, 0);//max depth 2, jo ar lielaku parak bremze
+//             rootNode.printTree(0);
+//             GameTree bestMove = rootNode.bestMove(2);
+//             if (bestMove != null) {
+//                 System.out.println("Best Move:");
+//                 System.out.println("Game State: " + bestMove.gameState);
+//                 System.out.println("Player1 Score: " + bestMove.player1Score);
+//                 System.out.println("Player2 Score: " + bestMove.player2Score);
+//                 System.out.println("Heuristic: " + bestMove.heuristic());
+//             } else {
+//                 System.out.println("No valid best move found.");
+//             }
 
 
             buttons = new GameButtons(gameArray);
@@ -124,9 +122,6 @@ public class MainWindow{
                 }
                 byte result = buttons.calculateScore(gameArray);
                 ArrayList<Integer> selectedIndices = buttons.getSelectedIndices();
-                //if (!playerTurn) {
-                   // fakeButtons = new fakeButtons(gameArray, selectedIndices);
-               // }
                 switch (result) {
                     case 2 -> {
                         if (playerTurn) {
@@ -158,8 +153,6 @@ public class MainWindow{
                     default -> throw new AssertionError();
                 }
                 label.setText("Spelētājs " + player1Score + " : " + "Dators " + player2Score);
-                // Debug kods priekš lai būtu redzams datora gājiens vēlāk pārvietot augstāk ar visu loģiku ko izpilda dators
-                
                 buttons.updateButtons(gameArray);
                 if (gameArray.size() == 1) {
                         endGame();
@@ -168,21 +161,7 @@ public class MainWindow{
 
                 playerTurn=false;
                 computerMove(gameArray);    
-                //if (!playerTurn) {
-                   // fakeButtons.setVisible(true);
-                   // playerTurn = !playerTurn;
-                   // buttons.updateButtons(gameArray);
-                    //if (gameArray.size() == 1) {
-                     //   endGame();
-                      //  return;
-                    //}
-                    //else return;
-               // }
                 playerTurn = true; // Gājiena maiņa
-               // buttons.updateButtons(gameArray);
-                //if (gameArray.size() == 1) {
-                    //endGame();
-               // }
             });
             frame.add(continueButton, BorderLayout.SOUTH);
             frame.revalidate();
