@@ -160,7 +160,10 @@ public class MainWindow{
                     }
 
                 playerTurn=false;
+                long startTime = System.currentTimeMillis();
                 computerMove(gameArray);    
+                long endTime = System.currentTimeMillis();
+                System.out.println("Laiks darbībai aizņēma: "+ (endTime - startTime) + "ms");
                 playerTurn = true; // Gājiena maiņa
             });
             frame.add(continueButton, BorderLayout.SOUTH);
